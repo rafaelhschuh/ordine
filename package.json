@@ -1,0 +1,29 @@
+{
+  "name": "ordine",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "apps/display-panel",
+    "apps/control-panel",
+    "apps/ticket-issuer"
+  ],
+  "scripts": {
+    "dev": "npm-run-all --parallel dev:backend dev:display dev:control dev:issuer",
+    "dev:backend": "npm --workspace backend run dev",
+    "dev:display": "npm --workspace apps/display-panel run dev",
+    "dev:control": "npm --workspace apps/control-panel run dev",
+    "dev:issuer": "npm --workspace apps/ticket-issuer run dev",
+    "build": "npm-run-all build:backend build:display build:control build:issuer",
+    "build:backend": "npm --workspace backend run build --if-present",
+    "build:display": "npm --workspace apps/display-panel run build",
+    "build:control": "npm --workspace apps/control-panel run build",
+    "build:issuer": "npm --workspace apps/ticket-issuer run build"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  },
+  "dependencies": {
+    "vue": "^3.5.22"
+  }
+}

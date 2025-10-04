@@ -1,0 +1,14 @@
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+
+export default defineConfig({
+  plugins: [vue()],
+  server: {
+    port: 8001,
+    host: true,
+  },
+  preview: {
+    port: 58001,
+    host: true,
+  },
+});

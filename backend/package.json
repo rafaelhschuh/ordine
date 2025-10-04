@@ -1,0 +1,21 @@
+{
+  "name": "ordine-backend",
+  "version": "1.0.0",
+  "description": "API de fila de senhas para o sistema Ordine",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "build": "echo \"Nada para compilar no backend\""
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
