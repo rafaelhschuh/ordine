@@ -87,6 +87,17 @@ Todos os projetos compartilham a mesma estética: tipografia Montserrat, fundo d
 Eventos Socket.IO:
 - `ticket:update`: enviado a todos os clientes sempre que o estado muda.
 
+## Impressão térmica ESC/POS
+
+- A emissão de novas senhas dispara automaticamente a impressão em uma impressora térmica de rede utilizando a biblioteca [`escpos`](https://www.npmjs.com/package/escpos).
+- As configurações ficam todas concentradas no arquivo `backend/src/printer.js`. Lá você ajusta facilmente:
+   - `enabled`: habilita/desabilita a impressão sem apagar o código.
+   - `connection.ip` e `connection.port`: IP/porta da impressora (padrão `9100`).
+   - `options.encoding`: encoding utilizado na impressora (padrão `CP860`).
+   - `layout`: textos, separadores e mensagens finais impressas no comprovante.
+- Caso prefira controlar via variáveis de ambiente, utilize `PRINTER_ENABLED`, `PRINTER_IP`, `PRINTER_PORT` e `PRINTER_ENCODING` ao iniciar o backend.
+- O status da tentativa de impressão é retornado no campo `print` da resposta do endpoint `POST /api/tickets`, permitindo exibir feedback adicional no totem se desejado.
+
 ### Tratamento de senhas preferenciais
 
 - As senhas são normalizadas para os tipos `Geral` e `Preferencial`. Valores como `prioritário` ou `p` também são entendidos como preferenciais.

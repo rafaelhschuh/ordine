@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
+const { printTicket } = require('./printer');
 
 const PORT = Number(process.env.PORT) || 8000;
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS
@@ -132,17 +133,31 @@ app.get('/api/tickets/state', (req, res) => {
   res.json(buildState());
 });
 
-app.post('/api/tickets', (req, res) => {
+app.post('/api/tickets', async (req, res) => {
   const { service } = req.body || {};
   const ticket = createTicket(service);
 
   queueState.queue.push(ticket);
   emitState();
 
+  let printResult = { printed: false, reason: 'skipped' };
+  try {
+    printResult = await printTicket(ticket);
+    if (!printResult.printed && printResult.error) {
+      // eslint-disable-next-line no-console
+      console.error('[printer] Impressão não concluída:', printResult.error.message || printResult.error);
+    }
+  } catch (error) {
+    printResult = { printed: false, error };
+    // eslint-disable-next-line no-console
+    console.error('[printer] Falha inesperada ao imprimir:', error.message || error);
+  }
+
   res.status(201).json({
     ticket,
     state: buildState(),
     message: 'Senha criada e adicionada à fila.',
+    print: printResult,
   });
 });
 
