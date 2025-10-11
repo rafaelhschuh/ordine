@@ -312,7 +312,7 @@ const nextGeral = computed(() => state.nextGeral);
 
 .ticket-code {
   margin: 0;
-  font-size: clamp(6rem, 15vw, 12rem);
+  font-size: clamp(8rem, 17vw, 19rem);
   line-height: 0.8;
   font-weight: 700;
   text-align: center;
@@ -450,7 +450,7 @@ const nextGeral = computed(() => state.nextGeral);
 
 .queue-total strong {
   font-size: clamp(2.2rem, 4.5vw, 3.5rem);
-  color: var(--accent);
+  color: var(--text-muted);
   line-height: 0.85;
   font-weight: 700;
 }
@@ -512,7 +512,7 @@ const nextGeral = computed(() => state.nextGeral);
   }
 
   .ticket-code {
-    font-size: clamp(5rem, 14vw, 8rem);
+    font-size: clamp(9rem, 18vw, 12rem);
     line-height: 0.75;
   }
 
@@ -642,7 +642,7 @@ const nextGeral = computed(() => state.nextGeral);
   }
 
   .ticket-code {
-    font-size: clamp(4rem, 12vw, 7rem);
+    font-size: clamp(8rem, 12vw, 14rem);
     line-height: 0.75;
   }
 
