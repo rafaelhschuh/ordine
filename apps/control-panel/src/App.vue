@@ -3,7 +3,7 @@
     <header class="header">
       <div class="title-block">
         <h1>Controle de Senhas</h1>
-        <p>Operação otimizada para tablet em pé, com foco em senhas geral e preferencial.</p>
+        <p>Gerencie a chamada de senhas.</p>
       </div>
       <div class="status-pill" :class="{ online: isOnline }">
         <span class="dot" />

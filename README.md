@@ -62,13 +62,95 @@ Todos os projetos compartilham a mesma estética: tipografia Montserrat, fundo d
    cd ../ticket-issuer && npm install
    ```
 
-2. **Configure variáveis de ambiente** (opcional):
-   - Copie os arquivos `.env.example` para `.env` em cada painel/frontend ajustando `VITE_API_BASE` se a API estiver em outro host.
-   - Para a API, utilize variáveis de ambiente padrão (`PORT` e `ALLOWED_ORIGINS`) caso precise customizar portas/domínios.
+2. **Configure variáveis de ambiente**:
+   
+   Todas as variáveis de ambiente agora estão centralizadas em um único arquivo `.env` na raiz do projeto.
+
+   ```sh
+   # Copie o arquivo de exemplo
+   cp .env.example .env
+   ```
+
+   ### Configuração para Desenvolvimento Local
+
+   Edite o arquivo `.env` para acesso apenas local (localhost):
+
+   ```env
+   # Backend - Servidor API
+   PORT=8000
+   BACKEND_HOST=0.0.0.0
+   ALLOWED_ORIGINS=*
+
+   # Frontend - Configuração dos Apps Vue.js
+   VITE_API_BASE=http://localhost:8000
+   VITE_SOCKET_URL=http://localhost:8000
+   VITE_HOST=0.0.0.0
+
+   # Portas dos Painéis Frontend
+   VITE_DISPLAY_PORT=8001   # Painel de Display (TV)
+   VITE_CONTROL_PORT=8002   # Painel de Controle
+   VITE_ISSUER_PORT=8003    # Totem de Emissão
+   ```
+
+   ### Configuração para Acesso Remoto (Outros Dispositivos na Rede)
+
+   Para acessar os painéis de outros dispositivos (tablets, TVs, celulares) na mesma rede:
+
+   1. **Descubra o IP da sua máquina**:
+      
+      **Opção 1 - Use o script helper:**
+      ```sh
+      chmod +x get-ip.sh
+      ./get-ip.sh
+      ```
+
+      **Opção 2 - Manualmente:**
+      ```sh
+      # Linux/Mac
+      ip addr show | grep "inet "
+      # ou
+      hostname -I
+      
+      # Windows
+      ipconfig
+      ```
+      Exemplo de IP: `192.168.1.100`
+
+   2. **Configure o `.env` com o IP da máquina**:
+      ```env
+      # Backend
+      PORT=8000
+      BACKEND_HOST=0.0.0.0
+      ALLOWED_ORIGINS=*
+
+      # Frontend - IMPORTANTE: Use o IP da sua máquina
+      VITE_API_BASE=http://192.168.1.100:8000
+      VITE_SOCKET_URL=http://192.168.1.100:8000
+      VITE_HOST=0.0.0.0
+
+      # Portas dos Painéis
+      VITE_DISPLAY_PORT=8001
+      VITE_CONTROL_PORT=8002
+      VITE_ISSUER_PORT=8003
+      ```
+
+   3. **Acesse de outros dispositivos**:
+      - Painel TV: `http://192.168.1.100:8001`
+      - Painel Controle: `http://192.168.1.100:8002`
+      - Totem: `http://192.168.1.100:8003`
+      - API: `http://192.168.1.100:8000`
+
+   **Nota**: O arquivo `.env` na raiz é compartilhado por todos os apps (backend e frontends). Não é mais necessário criar arquivos `.env` separados em cada subdiretório.
 
 3. **Executando em desenvolvimento**
 
-   **Rodar tudo em paralelo (requer o passo `npm install` na raiz):**
+   **Opção mais fácil - usar o script fornecido:**
+
+   ```sh
+   ./start-dev.sh
+   ```
+
+   **Ou rodar tudo em paralelo (requer o passo `npm install` na raiz):**
 
    ```sh
    npm run dev
@@ -137,6 +219,43 @@ Eventos Socket.IO:
 - **Feedbacks visuais**: toasts, indicadores online/offline e mensagens de erro.
 - **Acessibilidade**: botões grandes, contraste alto e fluxo claro para usuários.
 - **Impressão otimizada**: o totem possui estilos específicos para impressão da senha.
+
+## Troubleshooting - Acesso Remoto
+
+### Não consigo acessar os painéis de outros dispositivos
+
+1. **Verifique se o firewall está bloqueando as portas**:
+   ```sh
+   # Linux (UFW)
+   sudo ufw allow 8000:8003/tcp
+   
+   # Linux (firewalld)
+   sudo firewall-cmd --add-port=8000-8003/tcp --permanent
+   sudo firewall-cmd --reload
+   ```
+
+2. **Certifique-se de que o `.env` está configurado corretamente**:
+   - `BACKEND_HOST=0.0.0.0`
+   - `VITE_HOST=0.0.0.0`
+   - `VITE_API_BASE` e `VITE_SOCKET_URL` devem usar o IP da máquina (não localhost)
+
+3. **Verifique se todos os dispositivos estão na mesma rede**
+
+4. **Teste a conectividade**:
+   ```sh
+   # De outro dispositivo, teste se consegue acessar a API
+   curl http://SEU_IP:8000/api/health
+   ```
+
+5. **Reinicie os serviços** após alterar o `.env`:
+   - Pare todos os serviços (Ctrl+C)
+   - Execute `npm run dev` novamente
+
+### WebSocket não conecta de outros dispositivos
+
+- Certifique-se de que `VITE_SOCKET_URL` no `.env` usa o IP da máquina, não localhost
+- Verifique se `ALLOWED_ORIGINS=*` está configurado no `.env`
+- Em produção, configure `ALLOWED_ORIGINS` com os IPs/domínios específicos por segurança
 
 ## Próximos passos sugeridos
 

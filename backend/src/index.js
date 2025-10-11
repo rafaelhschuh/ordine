@@ -1,3 +1,6 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -5,11 +8,14 @@ const { Server } = require('socket.io');
 const { printTicket } = require('./printer');
 
 const PORT = Number(process.env.PORT) || 8000;
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS
-  || 'http://localhost:8001,http://localhost:8002,http://localhost:8003,http://127.0.0.1:8001,http://127.0.0.1:8002,http://127.0.0.1:8003')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const BACKEND_HOST = process.env.BACKEND_HOST || '0.0.0.0';
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS === '*' 
+  ? '*' 
+  : (process.env.ALLOWED_ORIGINS
+    || 'http://localhost:8001,http://localhost:8002,http://localhost:8003,http://127.0.0.1:8001,http://127.0.0.1:8002,http://127.0.0.1:8003')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
 const app = express();
 const server = http.createServer(app);
@@ -258,7 +264,8 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, BACKEND_HOST, () => {
   // eslint-disable-next-line no-console
-  console.log(`Servidor de senhas rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor de senhas rodando em ${BACKEND_HOST}:${PORT}`);
+  console.log(`📡 Acesse de outros dispositivos usando: http://<SEU_IP>:${PORT}`);
 });
