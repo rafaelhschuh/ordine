@@ -13,35 +13,30 @@
 
     <main class="stack">
       <section class="panel glass current-card">
-        <span class="eyebrow">Senha atual</span>
-        <div class="current-code">{{ currentTicket?.code ?? '--' }}</div>
-        <p class="current-service">{{ currentTicket?.service ?? 'Sem chamada ativa' }}</p>
-        <div class="meta">
-          <div>
-            <span>Emitida</span>
-            <strong>{{ formatTime(currentTicket?.issuedAt) }}</strong>
-          </div>
-          <div>
-            <span>Atendidas hoje</span>
-            <strong>{{ history.length }}</strong>
+        <div class="current-header">
+          <span class="eyebrow-large">SENHA ATUAL</span>
+        </div>
+        <div class="current-main">
+          <transition name="ticket-change" mode="out-in">
+            <div :key="currentTicket?.code" class="current-code">{{ currentTicket?.code ?? '--' }}</div>
+          </transition>
+          <p class="current-service">{{ currentTicket?.service ?? 'Sem chamada ativa' }}</p>
+        </div>
+        <div class="current-footer">
+          <div class="meta">
+            <div>
+              <span>Emitida</span>
+              <strong>{{ formatTime(currentTicket?.issuedAt) }}</strong>
+            </div>
+            <div>
+              <span>Atendidas hoje</span>
+              <strong>{{ history.length }}</strong>
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="panel glass highlight">
-        <div class="split">
-          <div>
-            <span class="eyebrow">Próxima preferencial</span>
-            <h2>{{ nextPreferencial?.code ?? '—' }}</h2>
-            <p>{{ nextPreferencial?.service ?? 'Nenhuma na fila' }}</p>
-          </div>
-          <div>
-            <span class="eyebrow">Próxima geral</span>
-            <h2>{{ nextGeral?.code ?? '—' }}</h2>
-            <p>{{ nextGeral?.service ?? 'Nenhuma na fila' }}</p>
-          </div>
-        </div>
-      </section>
+
 
       <section class="panel glass counters">
         <div class="counter-pill preferencial">
@@ -60,45 +55,58 @@
         <div class="call-buttons">
           <button
             class="primary preferencial"
+            :class="{ loading: loading.preferencial }"
             :disabled="!queueByType.preferencial || loading.preferencial"
             @click="callNextPreferencial"
           >
-            Chamar Preferencial
+            <span v-if="!loading.preferencial">Chamar Preferencial</span>
+            <span v-else class="loading-text">
+              <span class="spinner"></span>
+              Chamando...
+            </span>
           </button>
           <button
             class="primary geral"
+            :class="{ loading: loading.geral }"
             :disabled="!queueByType.geral || loading.geral"
             @click="callNextGeral"
           >
-            Chamar Geral
+            <span v-if="!loading.geral">Chamar Geral</span>
+            <span v-else class="loading-text">
+              <span class="spinner"></span>
+              Chamando...
+            </span>
           </button>
         </div>
         <div class="utility-buttons">
-          <button class="ghost" :disabled="!history.length || loading.previous" @click="callPrevious">
-            Voltar senha
+          <button 
+            class="ghost" 
+            :class="{ loading: loading.previous }"
+            :disabled="!history.length || loading.previous" 
+            @click="callPrevious"
+          >
+            <span v-if="!loading.previous">Voltar Senha</span>
+            <span v-else class="loading-text">
+              <span class="spinner"></span>
+              Voltando...
+            </span>
           </button>
-          <button class="danger" :disabled="loading.reset" @click="confirmReset">
-            Zerar fila
+          <button 
+            class="danger" 
+            :class="{ loading: loading.reset }"
+            :disabled="loading.reset" 
+            @click="confirmReset"
+          >
+            <span v-if="!loading.reset">Zerar Fila</span>
+            <span v-else class="loading-text">
+              <span class="spinner"></span>
+              Zerando...
+            </span>
           </button>
         </div>
       </section>
 
-      <section class="panel glass queue-list">
-        <header>
-          <span class="eyebrow">Fila completa</span>
-          <button class="ghost" :disabled="loading.refresh" @click="fetchState">Atualizar</button>
-        </header>
-        <ul>
-          <li v-for="ticket in queue" :key="ticket.id">
-            <div class="line-left">
-              <span class="code">{{ ticket.code }}</span>
-              <span class="service">{{ ticket.service }}</span>
-            </div>
-            <span class="time">{{ formatTime(ticket.issuedAt) }}</span>
-          </li>
-          <li v-if="queue.length === 0" class="empty">Fila vazia no momento.</li>
-        </ul>
-      </section>
+
     </main>
 
     <transition name="toast">
@@ -266,51 +274,55 @@ onUnmounted(() => {
 });
 
 const currentTicket = computed(() => state.currentTicket);
-const queue = computed(() => state.queue);
 const queueByType = computed(() => state.queueByType ?? defaultQueueByType());
 const history = computed(() => state.history);
-const nextPreferencial = computed(() => state.nextPreferencial);
-const nextGeral = computed(() => state.nextGeral);
 </script>
 
 <style scoped>
 .wrapper {
-  min-height: 100vh;
-  max-width: 520px;
-  margin: 0 auto;
+  height: 100vh;
+  width: 100vw;
   display: flex;
   flex-direction: column;
-  padding: 32px clamp(16px, 3vw, 32px) 48px;
-  gap: 24px;
+  padding: clamp(0.5rem, 1.5vw, 1rem) clamp(0.8rem, 2vw, 1.2rem) clamp(0.3rem, 1vw, 0.6rem);
+  gap: clamp(0.8rem, 2vw, 1.2rem);
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .header {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: clamp(0.5rem, 1.5vw, 0.8rem);
+  flex-shrink: 0;
+  padding: 0 clamp(0.5rem, 1.5vw, 1rem);
 }
 
 .title-block h1 {
   margin: 0;
-  font-size: clamp(28px, 5vw, 40px);
+  font-size: clamp(1.4rem, 3.5vw, 2rem);
+  line-height: 1.1;
+  font-weight: 800;
 }
 
 .title-block p {
-  margin: 6px 0 0;
+  margin: 0.2rem 0 0;
   color: var(--text-muted);
-  line-height: 1.4;
+  line-height: 1.2;
+  font-size: clamp(0.8rem, 1.8vw, 0.95rem);
 }
 
 .status-pill {
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 18px;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(0.75rem, 1.5vw, 0.9rem);
 }
 
 .status-pill.online {
@@ -320,104 +332,141 @@ const nextGeral = computed(() => state.nextGeral);
 }
 
 .status-pill .dot {
-  width: 9px;
-  height: 9px;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 50%;
   background: currentColor;
-  box-shadow: 0 0 12px currentColor;
+  box-shadow: 0 0 8px currentColor;
 }
 
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: clamp(0.8rem, 1.8vw, 1rem);
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 clamp(0.5rem, 1.5vw, 1rem);
+  padding-bottom: 0;
 }
 
 .glass {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 26px;
+  border-radius: 20px;
   box-shadow: var(--shadow-xl);
   backdrop-filter: blur(18px);
-  padding: 24px clamp(20px, 4vw, 32px);
+  padding: clamp(1rem, 3vw, 1.5rem);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: clamp(0.8rem, 2vw, 1rem);
+  flex-shrink: 0;
+}
+
+.glass:last-child {
+  flex: 1;
+  justify-content: space-between;
 }
 
 .eyebrow {
   text-transform: uppercase;
-  letter-spacing: 0.28em;
-  font-size: 12px;
+  letter-spacing: 0.25em;
+  font-size: clamp(0.65rem, 1.2vw, 0.75rem);
   color: var(--text-muted);
 }
 
 .current-card {
   text-align: center;
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: clamp(200px, 25vh, 300px);
+}
+
+.current-header {
+  flex-shrink: 0;
+  padding: 0.5rem 0;
+}
+
+.eyebrow-large {
+  text-transform: uppercase;
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
+  letter-spacing: 0.4em;
+  color: var(--accent);
+  font-weight: 800;
+  text-shadow: 0 2px 8px rgba(255, 179, 71, 0.3);
+}
+
+.current-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+.current-footer {
+  flex-shrink: 0;
+  padding: 0.5rem 0;
 }
 
 .current-code {
-  font-size: clamp(64px, 18vw, 120px);
-  font-weight: 700;
+  font-size: clamp(4rem, 15vw, 8rem);
+  font-weight: 800;
   letter-spacing: 0.08em;
+  line-height: 0.85;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .current-service {
   margin: 0;
-  font-size: clamp(18px, 4vw, 26px);
-  color: rgba(255, 255, 255, 0.86);
+  font-size: clamp(1.2rem, 3.5vw, 1.8rem);
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.2;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .meta {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 0.8rem;
   text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.12em;
+  font-size: clamp(0.65rem, 1.2vw, 0.75rem);
+  letter-spacing: 0.1em;
   color: var(--text-muted);
 }
 
 .meta strong {
   display: block;
-  margin-top: 4px;
-  font-size: 16px;
+  margin-top: 0.2rem;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
   color: #ffffff;
-}
-
-.highlight .split {
-  display: grid;
-  gap: 12px;
-}
-
-.highlight h2 {
-  margin: 8px 0;
-  font-size: clamp(34px, 10vw, 60px);
-}
-
-.highlight p {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.78);
 }
 
 .counters {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: clamp(0.8rem, 2vw, 1rem);
 }
 
 .counter-pill {
-  border-radius: 20px;
-  padding: 18px;
+  border-radius: 18px;
+  padding: clamp(1rem, 3vw, 1.4rem);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.4rem;
   align-items: center;
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.counter-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .counter-pill.preferencial {
@@ -431,48 +480,60 @@ const nextGeral = computed(() => state.nextGeral);
 }
 
 .counter-pill strong {
-  font-size: clamp(32px, 10vw, 54px);
+  font-size: clamp(2.2rem, 7vw, 4rem);
   color: #fff;
+  line-height: 0.9;
+  font-weight: 800;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .counter-pill .label {
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 11px;
+  letter-spacing: 0.15em;
+  font-size: clamp(0.65rem, 1.2vw, 0.75rem);
   color: rgba(255, 255, 255, 0.76);
 }
 
 .counter-pill .muted {
   color: rgba(255, 255, 255, 0.68);
-  font-size: 12px;
+  font-size: clamp(0.7rem, 1.3vw, 0.8rem);
 }
 
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: clamp(0.8rem, 2vw, 1rem);
 }
 
 .call-buttons {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: clamp(0.8rem, 2vw, 1rem);
+  flex: 1;
 }
 
 .utility-buttons {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: clamp(0.6rem, 1.5vw, 0.8rem);
+  margin-top: auto;
 }
 
 .actions button {
   border-radius: 18px;
   border: none;
-  padding: 18px;
-  font-size: 17px;
-  font-weight: 600;
+  padding: clamp(1.2rem, 3.5vw, 1.6rem);
+  font-size: clamp(1.1rem, 2.8vw, 1.5rem);
+  font-weight: 700;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  min-height: clamp(60px, 9vw, 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
 }
 
 .actions button:disabled {
@@ -482,12 +543,19 @@ const nextGeral = computed(() => state.nextGeral);
 
 .actions button:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+.actions button:not(:disabled):active {
+  transform: translateY(0);
 }
 
 .primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   color: #1b2440;
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
+  min-height: clamp(64px, 10vw, 84px);
+  font-weight: 800;
 }
 
 .primary.preferencial {
@@ -502,78 +570,29 @@ const nextGeral = computed(() => state.nextGeral);
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  min-height: clamp(56px, 8vw, 72px);
 }
 
 .danger {
   background: rgba(255, 99, 132, 0.18);
   color: #ff8086;
   border: 1px solid rgba(255, 99, 132, 0.35);
-}
-
-.queue-list header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.queue-list ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 240px;
-  overflow-y: auto;
-}
-
-.queue-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.queue-list .line-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.queue-list .code {
-  font-weight: 600;
-  letter-spacing: 0.12em;
-}
-
-.queue-list .service {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
-}
-
-.queue-list .time {
-  color: var(--text-muted);
-  font-size: 13px;
-}
-
-.queue-list .empty {
-  justify-content: center;
-  text-align: center;
-  font-style: italic;
-  opacity: 0.62;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  min-height: clamp(56px, 8vw, 72px);
 }
 
 .toast {
   position: fixed;
-  bottom: 32px;
+  bottom: clamp(0.5rem, 2vw, 1rem);
   left: 50%;
   transform: translateX(-50%);
-  padding: 16px 24px;
-  border-radius: 18px;
+  padding: 1rem 1.5rem;
+  border-radius: 16px;
   backdrop-filter: blur(16px);
   box-shadow: var(--shadow-xl);
+  font-size: clamp(0.85rem, 1.8vw, 1rem);
+  z-index: 1000;
 }
 
 .toast.success {
@@ -599,47 +618,411 @@ const nextGeral = computed(() => state.nextGeral);
   transform: translate(-50%, 12px);
 }
 
-@media (min-width: 520px) {
+/* Responsividade melhorada */
+@media (min-width: 480px) {
   .call-buttons {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .call-buttons button {
-    width: 100%;
-  }
-
   .utility-buttons {
     flex-direction: row;
-    gap: 14px;
+    gap: clamp(0.8rem, 2vw, 1rem);
   }
 
   .utility-buttons button {
     flex: 1;
   }
-
-  .highlight .split {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
-@media (orientation: landscape) and (min-width: 960px) {
+@media (min-width: 600px) and (orientation: landscape) {
   .wrapper {
-    max-width: 840px;
+    max-width: 900px;
+    padding: clamp(1rem, 2vw, 1.5rem);
   }
 
   .stack {
     display: grid;
     grid-template-columns: repeat(2, minmax(280px, 1fr));
     grid-auto-rows: minmax(0, auto);
-    gap: 24px;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    overflow: visible;
   }
 
   .current-card {
     grid-column: span 2;
   }
 
-  .queue-list {
+  .actions {
     grid-column: span 2;
+  }
+}
+
+/* Telas muito altas (aproveitar espaço vertical) */
+@media (min-height: 1000px) and (max-width: 768px) {
+  .wrapper {
+    padding: clamp(1.5rem, 3vh, 2.5rem) clamp(1.5rem, 4vw, 2rem) clamp(0.5rem, 1.5vh, 1rem);
+  }
+  
+  .stack {
+    gap: clamp(1.8rem, 3.5vh, 2.5rem);
+    padding: 0 clamp(1.5rem, 3vw, 2rem);
+  }
+  
+  .current-card {
+    min-height: clamp(350px, 40vh, 450px);
+  }
+  
+  .glass {
+    padding: clamp(2rem, 4vh, 2.8rem);
+  }
+  
+  .actions button {
+    min-height: clamp(72px, 8vh, 88px);
+    padding: clamp(1.6rem, 3vh, 2rem);
+  }
+  
+  .counter-pill {
+    padding: clamp(1.5rem, 3vh, 2rem);
+  }
+  
+  .counter-pill strong {
+    font-size: clamp(2.5rem, 5vh, 4.5rem);
+  }
+}
+
+/* Telas muito largas (aproveitar espaço horizontal) */
+@media (min-width: 1200px) and (max-height: 800px) {
+  .wrapper {
+    padding: clamp(0.8rem, 1.5vh, 1.2rem) clamp(3rem, 6vw, 5rem);
+  }
+  
+  .header {
+    padding: 0 clamp(2rem, 4vw, 3rem);
+  }
+  
+  .stack {
+    padding: 0 clamp(2rem, 4vw, 3rem);
+  }
+}
+
+@media (max-width: 400px) {
+  .wrapper {
+    padding: 0.6rem 0.8rem 0.3rem;
+  }
+  
+  .header {
+    padding: 0 0.5rem;
+  }
+  
+  .stack {
+    padding: 0 0.5rem;
+  }
+  
+  .meta {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .toast {
+    bottom: 0.3rem;
+  }
+}
+
+/* Animações */
+.ticket-change-enter-active,
+.ticket-change-leave-active {
+  transition: all 0.3s ease;
+}
+
+.ticket-change-enter-from {
+  opacity: 0;
+  transform: scale(0.9) translateY(10px);
+}
+
+.ticket-change-leave-to {
+  opacity: 0;
+  transform: scale(1.1) translateY(-10px);
+}
+
+/* Estilos para loading */
+.loading-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.actions button.loading {
+  opacity: 0.8;
+}
+
+/* Melhor feedback visual para touch */
+@media (pointer: coarse) {
+  .actions button {
+    min-height: clamp(68px, 11vw, 88px);
+    padding: clamp(1.4rem, 4vw, 1.8rem);
+    font-size: clamp(1.2rem, 3.2vw, 1.6rem);
+  }
+  
+  .primary {
+    font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+    min-height: clamp(72px, 12vw, 92px);
+  }
+  
+  .ghost, .danger {
+    font-size: clamp(1.1rem, 2.8vw, 1.4rem);
+    min-height: clamp(60px, 9vw, 76px);
+  }
+  
+  .counter-pill {
+    padding: clamp(1rem, 3vw, 1.4rem);
+  }
+  
+  .glass {
+    padding: clamp(1.2rem, 3.5vw, 1.8rem);
+  }
+}
+
+/* iPad Mini e similares (768x1024) */
+@media (min-width: 768px) and (max-width: 820px) and (orientation: portrait) {
+  .wrapper {
+    padding: clamp(0.8rem, 2vw, 1.2rem) clamp(1.5rem, 3.5vw, 2rem) clamp(0.4rem, 1.2vw, 0.8rem);
+  }
+  
+  .stack {
+    gap: clamp(1.2rem, 2.5vw, 1.5rem);
+    padding: 0 clamp(1.2rem, 2.8vw, 1.6rem);
+  }
+  
+  .current-card {
+    min-height: clamp(260px, 32vh, 320px);
+  }
+  
+  .glass {
+    padding: clamp(1.4rem, 3.2vw, 1.8rem);
+  }
+  
+  .actions button {
+    min-height: clamp(64px, 9vh, 80px);
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  }
+  
+  .primary {
+    font-size: clamp(1.2rem, 2.8vw, 1.5rem);
+    min-height: clamp(68px, 10vh, 84px);
+  }
+}
+
+/* iPad Air e similares (820x1180) */
+@media (min-width: 820px) and (max-width: 900px) and (orientation: portrait) {
+  .wrapper {
+    padding: clamp(1rem, 2.2vw, 1.4rem) clamp(2rem, 4vw, 2.5rem) clamp(0.5rem, 1.5vw, 1rem);
+  }
+  
+  .stack {
+    gap: clamp(1.3rem, 2.8vw, 1.6rem);
+    padding: 0 clamp(1.5rem, 3.2vw, 2rem);
+  }
+  
+  .current-card {
+    min-height: clamp(280px, 34vh, 350px);
+  }
+  
+  .glass {
+    padding: clamp(1.6rem, 3.5vw, 2rem);
+  }
+}
+
+/* iPad Pro 11" e similares (834x1194) */
+@media (min-width: 834px) and (max-width: 950px) and (orientation: portrait) {
+  .wrapper {
+    padding: clamp(1.2rem, 2.5vw, 1.6rem) clamp(2.2rem, 4.5vw, 3rem) clamp(0.6rem, 1.8vw, 1.2rem);
+  }
+  
+  .stack {
+    gap: clamp(1.4rem, 3vw, 1.8rem);
+    padding: 0 clamp(1.8rem, 3.5vw, 2.2rem);
+  }
+  
+  .current-card {
+    min-height: clamp(300px, 36vh, 380px);
+  }
+}
+
+/* iPad Pro 12.9" e similares (1024x1366) */
+@media (min-width: 1024px) and (max-width: 1100px) and (orientation: portrait) {
+  .wrapper {
+    padding: clamp(1.5rem, 3vw, 2rem) clamp(3rem, 5vw, 4rem) clamp(0.8rem, 2vw, 1.5rem);
+  }
+  
+  .stack {
+    gap: clamp(1.6rem, 3.2vw, 2rem);
+    padding: 0 clamp(2.5rem, 4vw, 3rem);
+  }
+  
+  .current-card {
+    min-height: clamp(320px, 38vh, 420px);
+  }
+  
+  .glass {
+    padding: clamp(2rem, 4vw, 2.5rem);
+  }
+  
+  .actions button {
+    min-height: clamp(72px, 10vh, 88px);
+    font-size: clamp(1.2rem, 2.8vw, 1.6rem);
+  }
+  
+  .primary {
+    font-size: clamp(1.3rem, 3vw, 1.7rem);
+    min-height: clamp(76px, 11vh, 92px);
+  }
+}
+
+/* Tablets pequenos (7-8 polegadas) */
+@media (min-width: 600px) and (max-width: 800px) {
+  .wrapper {
+    padding: clamp(0.6rem, 1.8vw, 1rem) clamp(1rem, 2.5vw, 1.5rem);
+  }
+  
+  .header {
+    padding: 0 clamp(0.8rem, 2vw, 1.2rem);
+  }
+  
+  .stack {
+    padding: 0 clamp(0.8rem, 2vw, 1.2rem);
+    gap: 1rem;
+  }
+  
+  .current-card {
+    min-height: clamp(220px, 28vh, 280px);
+  }
+  
+  .glass {
+    padding: clamp(1.2rem, 3.2vw, 1.6rem);
+  }
+}
+
+/* Tablets médios (9-10 polegadas) */
+@media (min-width: 800px) and (max-width: 1024px) {
+  .wrapper {
+    padding: clamp(0.8rem, 2vw, 1.2rem) clamp(1.2rem, 3vw, 2rem);
+  }
+  
+  .header {
+    padding: 0 clamp(1rem, 2.5vw, 1.5rem);
+  }
+  
+  .stack {
+    padding: 0 clamp(1rem, 2.5vw, 1.5rem);
+    gap: clamp(1rem, 2.2vw, 1.3rem);
+  }
+  
+  .current-card {
+    min-height: clamp(240px, 30vh, 320px);
+  }
+}
+
+/* Tablets grandes (11+ polegadas) */
+@media (min-width: 1024px) and (max-width: 1366px) {
+  .wrapper {
+    padding: clamp(1rem, 2.5vw, 1.5rem) clamp(1.5rem, 4vw, 2.5rem);
+  }
+  
+  .header {
+    padding: 0 clamp(1.2rem, 3vw, 2rem);
+  }
+  
+  .stack {
+    padding: 0 clamp(1.2rem, 3vw, 2rem);
+    gap: clamp(1.2rem, 2.5vw, 1.6rem);
+  }
+  
+  .current-card {
+    min-height: clamp(280px, 32vh, 360px);
+  }
+  
+  .glass {
+    padding: clamp(1.6rem, 3.8vw, 2.2rem);
+  }
+}
+
+/* Otimização para tablets em modo paisagem */
+@media (min-width: 768px) and (max-width: 1366px) and (orientation: landscape) {
+  .wrapper {
+    padding: clamp(0.8rem, 1.5vw, 1.2rem) clamp(1.5rem, 3vw, 2.5rem);
+  }
+  
+  .header {
+    padding: 0 clamp(1rem, 2vw, 1.5rem);
+  }
+  
+  .stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    padding: 0 clamp(1rem, 2vw, 1.5rem);
+    overflow: visible;
+  }
+  
+  .current-card {
+    grid-column: span 2;
+    min-height: clamp(180px, 25vh, 240px);
+  }
+  
+  .counters {
+    grid-column: 1;
+  }
+  
+  .actions {
+    grid-column: 2;
+  }
+}
+
+/* Tablets ultra-wide (modo paisagem) */
+@media (min-width: 1200px) and (orientation: landscape) {
+  .wrapper {
+    padding: clamp(1rem, 2vw, 1.5rem) clamp(2rem, 5vw, 4rem);
+  }
+  
+  .stack {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: auto;
+    gap: clamp(1.5rem, 3vw, 2rem);
+    padding: 0 clamp(1.5rem, 3vw, 2rem);
+  }
+  
+  .current-card {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: clamp(300px, 40vh, 400px);
+  }
+  
+  .counters {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  
+  .actions {
+    grid-column: 3;
+    grid-row: 1;
   }
 }
 </style>

@@ -21,21 +21,17 @@ const PRINTER_PROFILE = {
     encoding: process.env.PRINTER_ENCODING || 'CP860',
   },
   /**
-   * Layout de impressão. Modifique os textos conforme a identidade visual do seu ponto de atendimento.
+   * Layout de impressão simples para 58mm.
    */
   layout: {
     brand: 'ORDINE',
-    tagline: 'Gestão inteligente de senhas',
-    separatorChar: '─',
-    thankYou: 'Obrigado pela preferência!',
-    infoLines: [
-      'Apresente esta senha ao ser chamado.',
-      'Preferenciais: gestantes, idosos, PCD e demais prioridades legais.',
-    ],
   },
 };
 
-const repeatChar = (char = '─', length = 32) => char.repeat(Math.max(length, 0));
+// Largura otimizada para impressoras de 58mm (aproximadamente 32 caracteres)
+const TICKET_WIDTH = 32;
+
+const repeatChar = (char = '─', length = TICKET_WIDTH) => char.repeat(Math.max(length, 0));
 
 const formatIssuedAt = (isoString) => {
   if (!isoString) return '';
@@ -50,64 +46,64 @@ const formatIssuedAt = (isoString) => {
   });
 };
 
+const centerText = (text, width = TICKET_WIDTH) => {
+  const padding = Math.max(0, width - text.length);
+  const leftPad = Math.floor(padding / 2);
+  const rightPad = padding - leftPad;
+  return ' '.repeat(leftPad) + text + ' '.repeat(rightPad);
+};
+
+const centerTextInBox = (text, totalWidth = TICKET_WIDTH) => {
+  // Para caixas com bordas, usamos totalWidth - 2 (bordas esquerda e direita)
+  const innerWidth = totalWidth - 2;
+  const padding = Math.max(0, innerWidth - text.length);
+  const leftPad = Math.floor(padding / 2);
+  const rightPad = padding - leftPad;
+  return ' '.repeat(leftPad) + text + ' '.repeat(rightPad);
+};
+
+const createBox = (char = '═') => repeatChar(char);
+const createDoubleLine = () => repeatChar('═');
+const createSingleLine = () => repeatChar('─');
+
 const applyLayout = (printer, ticket, profile) => {
   const { layout } = profile;
-  const separator = repeatChar(layout.separatorChar ?? '─');
+  const separator = createSingleLine();
 
+  // Cabeçalho simples
   printer
+    .feed(1)
     .align('ct')
     .style('B')
-    .size(2, 2)
-    .text(layout.brand ?? '')
+    .size(1, 2)
+    .text(layout.brand ?? 'ORDINE')
     .style('NORMAL')
-    .size(1, 1);
+    .size(1, 1)
+    .text(separator)
+    .feed(1);
 
-  if (layout.tagline) {
-    printer.text(layout.tagline);
-  }
-
-  printer.text(separator);
-
+  // Senha - destaque principal
   printer
     .align('ct')
     .style('B')
     .size(1, 1)
     .text('SENHA')
-    .size(2, 2)
+    .size(3, 3)
     .text(ticket.code)
-    .style('NORMAL')
     .size(1, 1)
-    .text(ticket.service.toUpperCase());
-
-  printer.text(separator);
-
-  printer
-    .align('lt')
-    .text(`Emitida: ${formatIssuedAt(ticket.issuedAt)}`)
-    .text(`Tipo: ${ticket.service}`)
-    .text(`Número interno: ${ticket.number}`)
-    .text(separator);
-
-  if (Array.isArray(layout.infoLines)) {
-    layout.infoLines.forEach((line) => {
-      if (line) printer.text(line);
-    });
-  }
-
-  if (layout.thankYou) {
-    printer
-      .text(separator)
-      .align('ct')
-      .style('B')
-      .text(layout.thankYou)
-      .style('NORMAL');
-  }
-
-  printer
-    .align('ct')
     .style('NORMAL')
-    .text('Aguarde a chamada no painel.')
-    .feed(4)
+    .text(ticket.service.toUpperCase())
+    .feed(1);
+
+  // Rodapé simples
+  printer
+    .text(separator)
+    .align('ct')
+    .text('Aguarde ser chamado')
+    .text(formatIssuedAt(ticket.issuedAt))
+    .feed(1)
+    .text(separator)
+    .feed(3)
     .cut();
 };
 

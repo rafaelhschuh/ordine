@@ -2,6 +2,33 @@
 
 Uma plataforma completa para gerenciamento de senhas com backend em Node.js e três painéis Vue.js independentes construídos com Vite. Pensado para funcionarem em totens, balcões de atendimento e painéis de TV.
 
+## ✨ Melhorias Implementadas
+
+### Interface Responsiva e Otimizada
+- **Layout 100% responsivo**: Todas as telas se adaptam perfeitamente a diferentes tamanhos de dispositivos
+- **Sem scroll desnecessário**: Interface otimizada para usar todo o espaço disponível da tela
+- **Tipografia Montserrat**: Fonte moderna carregada via Google Fonts para melhor legibilidade
+- **Animações sutis**: Transições suaves para mudanças de senha e feedback visual
+- **Acessibilidade melhorada**: Suporte a navegação por teclado e redução de movimento
+
+### Painel de Exibição (TV)
+- Layout otimizado para telas grandes (TVs e monitores)
+- Senha atual em destaque com animações de transição
+- Informações de fila organizadas de forma clara
+- Responsivo para diferentes orientações e tamanhos
+
+### Painel de Controle (Tablet)
+- Interface vertical otimizada para tablets
+- Botões grandes e touch-friendly
+- Feedback visual durante operações (loading states)
+- Layout adaptável para modo paisagem
+
+### Totem de Emissão
+- Interface touch otimizada para interação do usuário
+- Botões grandes e acessíveis
+- Feedback imediato após emissão de senha
+- Layout de impressão otimizado
+
 ## Visão geral da arquitetura
 
 - **API central (`backend`, porta 8000)**: expõe endpoints REST e emite eventos em tempo real via WebSocket (Socket.IO) para gerenciar fila, senha atual, histórico e emissão de novas senhas.
