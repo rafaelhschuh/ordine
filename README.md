@@ -87,8 +87,6 @@ Uma plataforma completa e moderna para gerenciamento de filas de atendimento com
 
 ## 🏗️ Arquitetura
 
-## 🏗️ Arquitetura
-
 O sistema é composto por 4 componentes principais que se comunicam via REST API e WebSocket:
 
 ```
@@ -151,16 +149,12 @@ O sistema é composto por 4 componentes principais que se comunicam via REST API
 
 ## 🔧 Requisitos
 
-## 🔧 Requisitos
-
 - **Node.js** 18 ou superior
 - **NPM** (ou pnpm/yarn)
 - **Navegador moderno** (Chrome, Firefox, Safari, Edge)
 - **(Opcional)** Impressora térmica ESC/POS com suporte de rede
 
 ## 📦 Instalação
-
-### Instalação Rápida (Workspaces NPM)
 
 ### Instalação Rápida (Workspaces NPM)
 
@@ -221,8 +215,6 @@ VITE_DISPLAY_PORT=8001   # Painel de Display (TV)
 VITE_CONTROL_PORT=8002   # Painel de Controle
 VITE_ISSUER_PORT=8003    # Totem de Emissão
 ```
-
-### 🌐 Configuração para Acesso Remoto
 
 ### 🌐 Configuração para Acesso Remoto
 
@@ -328,8 +320,6 @@ npm run build:display
 npm run build:control
 npm run build:issuer
 ```
-
-## 📚 API Reference
 
 ## 📚 API Reference
 
@@ -462,8 +452,6 @@ socket.on('ticket:update', (state) => {
 
 ## 🖨️ Impressão Térmica
 
-## 🖨️ Impressão Térmica
-
 O sistema suporta impressão automática de comprovantes em impressoras térmicas ESC/POS via rede.
 
 ### Configuração da Impressora
@@ -539,8 +527,6 @@ Cliente 5 solicita Geral       → G003
 Fila atual: P001, G001, P002, G002, G003
           └─── preferenciais chamadas primeiro
 ```
-
-## 🐛 Troubleshooting
 
 ## 🐛 Troubleshooting
 
@@ -671,8 +657,6 @@ Contribuições são bem-vindas! Sinta-se à vontade para:
 3. ✅ Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
 4. 📤 Push para a branch (`git push origin feature/AmazingFeature`)
 5. 🔃 Abrir um Pull Request
-
-## 📄 Licença
 
 ## 📄 Licença
 
