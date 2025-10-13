@@ -30,7 +30,8 @@ app.use(cors({ origin: ALLOWED_ORIGINS }));
 app.use(express.json());
 
 const queueState = {
-  counter: 0,
+  counterGeral: 0,
+  counterPreferencial: 0,
   currentTicket: null,
   queue: [],
   history: [],
@@ -103,7 +104,9 @@ const buildState = () => {
     queueLength: queueState.queue.length,
     queueByType: summary.byType,
     history: queueState.history.slice(-MAX_HISTORY),
-    issuedCount: queueState.counter,
+    issuedCount: queueState.counterGeral + queueState.counterPreferencial, // Total de senhas emitidas
+    issuedCountGeral: queueState.counterGeral,
+    issuedCountPreferencial: queueState.counterPreferencial,
     updatedAt: new Date().toISOString(),
   };
 };
@@ -116,13 +119,24 @@ const createTicket = (serviceInput = SERVICE_TYPES.GERAL) => {
   const service = normalizeService(serviceInput);
   const type = SERVICE_KEYS[service] ?? 'geral';
 
-  queueState.counter += 1;
-  const number = queueState.counter;
+  // Incrementa o contador específico do tipo de senha
+  let number;
+  let prefix;
+  
+  if (type === 'preferencial') {
+    queueState.counterPreferencial += 1;
+    number = queueState.counterPreferencial;
+    prefix = 'P';
+  } else {
+    queueState.counterGeral += 1;
+    number = queueState.counterGeral;
+    prefix = 'G';
+  }
+
   const paddedNumber = number.toString().padStart(3, '0');
-  const prefix = type === 'preferencial' ? 'P' : 'G';
 
   return {
-    id: number,
+    id: `${prefix}${paddedNumber}`, // Usando o código como ID único
     code: `${prefix}${paddedNumber}`,
     number,
     service,
@@ -244,7 +258,8 @@ app.post('/api/tickets/previous', (req, res) => {
 });
 
 app.post('/api/tickets/reset', (req, res) => {
-  queueState.counter = 0;
+  queueState.counterGeral = 0;
+  queueState.counterPreferencial = 0;
   queueState.currentTicket = null;
   queueState.queue = [];
   queueState.history = [];
