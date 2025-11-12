@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Backend - API e WebSocket
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    image: rafaelhschuh/ordine:backend-latest
+    container_name: ordine-backend-build
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      - PORT=8000
+      - BACKEND_HOST=0.0.0.0
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+    volumes:
+      - ../backend:/app/backend
+      - /app/backend/node_modules
+    restart: unless-stopped
+    networks:
+      - ordine-network
+
+  # Frontend - 3 aplicações Vue.js
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    image: rafaelhschuh/ordine:frontend-latest
+    container_name: ordine-frontend-build
+    ports:
+      - "${DISPLAY_PORT:-8001}:8001"  # Display Panel
+      - "${CONTROL_PORT:-8002}:8002"  # Control Panel
+      - "${ISSUER_PORT:-8003}:8003"   # Ticket Issuer
+    environment:
+      - VITE_API_BASE=${VITE_API_BASE:-http://localhost:8000}
+      - VITE_SOCKET_URL=${VITE_SOCKET_URL:-http://localhost:8000}
+      - VITE_HOST=0.0.0.0
+    volumes:
+      - ../apps:/app/apps
+      - /app/apps/display-panel/node_modules
+      - /app/apps/control-panel/node_modules
+      - /app/apps/ticket-issuer/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - ordine-network
+
+networks:
+  ordine-network:
+    driver: bridge

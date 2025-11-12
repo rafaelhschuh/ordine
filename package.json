@@ -27,7 +27,7 @@
     "vue": "^3.5.22"
   },
   "overrides": {
-    "request": "npm:@cypress/request@^3.0.6",
+    "request": "^3.0.6",
     "tough-cookie": "^5.0.0",
     "form-data": "^4.0.1"
   }

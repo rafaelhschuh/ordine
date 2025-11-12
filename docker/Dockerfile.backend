@@ -1,0 +1,21 @@
+# Dockerfile para o Backend do Ordine
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copia os arquivos de dependências
+COPY package*.json ./
+COPY backend/package*.json ./backend/
+
+# Instala as dependências
+RUN npm install --workspace backend --production
+
+# Copia o código do backend
+COPY backend ./backend
+COPY .env.example ./.env
+
+# Expõe a porta do backend
+EXPOSE 8000
+
+# Comando para iniciar o backend em produção
+CMD ["npm", "run", "--workspace", "backend", "start"]

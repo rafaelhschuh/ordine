@@ -1,0 +1,27 @@
+# Dockerfile para os 3 Frontends do Ordine
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copia os arquivos de dependências
+COPY package*.json ./
+COPY apps/display-panel/package*.json ./apps/display-panel/
+COPY apps/control-panel/package*.json ./apps/control-panel/
+COPY apps/ticket-issuer/package*.json ./apps/ticket-issuer/
+
+# Instala as dependências de todos os frontends (incluindo devDependencies para Vite)
+RUN npm install --workspace apps/display-panel && \
+    npm install --workspace apps/control-panel && \
+    npm install --workspace apps/ticket-issuer
+
+# Copia o código dos frontends
+COPY apps ./apps
+
+# Expõe as 3 portas dos frontends
+EXPOSE 8001 8002 8003
+
+# Instala npm-run-all para executar múltiplos comandos
+RUN npm install -g npm-run-all
+
+# Comando para iniciar os 3 frontends simultaneamente
+CMD ["npm-run-all", "--parallel", "dev:display", "dev:control", "dev:issuer"]
